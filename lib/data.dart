@@ -11,7 +11,7 @@ List<Map<String, dynamic>> productsData = [
   },
   {
     "id": 102,
-    "title": "Apple iPhone 15 128GB",
+    "title": "Apple iPhone 15 128GB - Natural Silver",
     "price": 800,
     "imageUrl":
         "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/iphone-15-pro-max.png",
@@ -20,7 +20,7 @@ List<Map<String, dynamic>> productsData = [
   },
   {
     "id": 103,
-    "title": "Galaxy Tab S9 FE",
+    "title": "Galaxy Tab S9 FE - 4GB - 128GB- Natural Silver",
     "price": 600,
     "imageUrl":
         "https://samsungar.vtexassets.com/arquivos/ids/192816/Galaxy-Tab-S9-FE_Gray_Product-Image_Combo.png?v=638337600068970000",

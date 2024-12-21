@@ -1,11 +1,25 @@
+import 'package:e_commerce_app/pages/bloc/ecommerce_bloc.dart';
 import 'package:e_commerce_app/widgets/app_colors.dart';
 import 'package:e_commerce_app/widgets/categories_widget.dart';
 import 'package:e_commerce_app/widgets/product_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: context.read<EcommerceBloc>()..add(FetchProductsEvent()),
+      child: const Body(),
+    );
+  }
+}
+
+class Body extends StatelessWidget {
+  const Body({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +58,7 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           CircleAvatar(
-            backgroundColor: AppColors.greenLight,
+            backgroundColor: AppColors.greyBackground,
             child: IconButton(
               icon: const Icon(Icons.notifications_none_outlined),
               onPressed: () {},

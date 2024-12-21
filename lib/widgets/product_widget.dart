@@ -1,7 +1,10 @@
 import 'package:e_commerce_app/data.dart';
+import 'package:e_commerce_app/model/product_model.dart';
+import 'package:e_commerce_app/pages/bloc/ecommerce_bloc.dart';
 import 'package:e_commerce_app/widgets/app_colors.dart';
 import 'package:e_commerce_app/widgets/app_primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProductWidget extends StatelessWidget {
   const ProductWidget({super.key});
@@ -16,31 +19,35 @@ class ProductWidget extends StatelessWidget {
         16,
         0,
       ),
-      child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: .60,
-          ),
-          itemCount: productsData.length,
-          itemBuilder: (context, index) {
-            final product = productsData[index];
-            return _buildCardProduct(size,
-                title: product["title"],
-                price: product["price"].toString(),
-                productId: product["id"].toString(),
-                imageUrl: product["imageUrl"]);
-          }),
+      child: BlocBuilder<EcommerceBloc, EcommerceState>(
+        builder: (context, state) {
+          if (state.homeStatus == HomeScreenStatus.loading) {
+            return Center(
+                child: CircularProgressIndicator(
+              color: AppColors.green,
+            ));
+          }
+          return GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: .60,
+              ),
+              itemCount: state.products.length,
+              itemBuilder: (context, index) {
+                final product = state.products[index];
+                return _buildCardProduct(context, size, product: product);
+              });
+        },
+      ),
     );
   }
 
   _buildCardProduct(
+    BuildContext context,
     Size size, {
-    required String title,
-    required String price,
-    required String productId,
-    required String imageUrl,
+    required ProductModel product,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,13 +59,14 @@ class ProductWidget extends StatelessWidget {
             color: AppColors.greyBackground,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Image.network(imageUrl),
+          child: Image.network(product.imageUrl),
         ),
         const SizedBox(
           height: 4,
         ),
         Text(
-          title,
+          product.title,
+          maxLines: 2,
           textAlign: TextAlign.left,
           style: TextStyle(
             color: AppColors.black,
@@ -70,7 +78,7 @@ class ProductWidget extends StatelessWidget {
           height: 8,
         ),
         Text(
-          "\$$price",
+          "\$${product.price}",
           style: TextStyle(color: AppColors.black, fontWeight: FontWeight.w600),
         ),
         const SizedBox(
@@ -78,7 +86,7 @@ class ProductWidget extends StatelessWidget {
         ),
         AppPrimaryButton(
           onTap: () {
-            // productId
+            context.read<EcommerceBloc>().add(AddToCartEvent(product: product));
           },
           text: "Add to cart",
           height: 30,

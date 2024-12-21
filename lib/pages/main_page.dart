@@ -1,7 +1,9 @@
+import 'package:e_commerce_app/pages/bloc/ecommerce_bloc.dart';
 import 'package:e_commerce_app/pages/cart_page.dart';
 import 'package:e_commerce_app/pages/home_page.dart';
 import 'package:e_commerce_app/widgets/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -36,61 +38,108 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        //no hace falta pasarle algo por que es del mismo tipo que onTap
-        onTap: onItemTapped,
-        showUnselectedLabels: true,
-        showSelectedLabels: true,
-        selectedLabelStyle: TextStyle(color: AppColors.black),
-        unselectedItemColor: AppColors.black,
-        selectedItemColor: AppColors.green,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.white,
-        items: const [
-          BottomNavigationBarItem(
-              activeIcon: Icon(
-                Icons.home,
-              ),
+        body: _pages[selectedIndex],
+        bottomNavigationBar: Container(
+            width: double.infinity,
+            height: 70,
+            color: AppColors.white,
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                itemButtonMenu(
+                  onTap: () => onItemTapped(0),
+                  icon: Icons.home,
+                  title: 'Home',
+                  isactive: selectedIndex == 0,
+                ),
+                itemButtonMenu(
+                  onTap: () => onItemTapped(1),
+                  icon: Icons.manage_search_outlined,
+                  title: 'Catalog',
+                  isactive: selectedIndex == 1,
+                ),
+                itemButtonMenu(
+                  onTap: () => onItemTapped(2),
+                  icon: Icons.shopping_cart_outlined,
+                  title: 'Cart',
+                  isactive: selectedIndex == 2,
+                  isCartItem: true,
+                ),
+                itemButtonMenu(
+                  onTap: () => onItemTapped(3),
+                  icon: Icons.favorite_border,
+                  title: 'Favorite',
+                  isactive: selectedIndex == 3,
+                ),
+                itemButtonMenu(
+                  onTap: () => onItemTapped(4),
+                  icon: Icons.person,
+                  title: 'Profile',
+                  isactive: selectedIndex == 4,
+                ),
+              ],
+            )));
+  }
+
+  Widget itemButtonMenu(
+      {required Function() onTap,
+      required IconData icon,
+      required String title,
+      required bool isactive,
+      bool isCartItem = false}) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          children: [
+            IconButton(
               icon: Icon(
-                Icons.home,
+                icon,
+                color: isactive ? AppColors.green : AppColors.black,
               ),
-              label: 'Home'),
-          BottomNavigationBarItem(
-              activeIcon: Icon(
-                Icons.manage_search_outlined,
-              ),
-              icon: Icon(
-                Icons.manage_search_outlined,
-              ),
-              label: 'Catalog'),
-          BottomNavigationBarItem(
-              activeIcon: Icon(
-                Icons.shopping_cart_outlined,
-              ),
-              icon: Icon(
-                Icons.shopping_cart_outlined,
-              ),
-              label: 'Cart'),
-          BottomNavigationBarItem(
-              activeIcon: Icon(
-                Icons.favorite_border,
-              ),
-              icon: Icon(
-                Icons.favorite_border,
-              ),
-              label: 'Favorite'),
-          BottomNavigationBarItem(
-              activeIcon: Icon(
-                Icons.person,
-              ),
-              icon: Icon(
-                Icons.person,
-              ),
-              label: 'Profile'),
-        ],
-      ),
+              onPressed: onTap,
+            ),
+            Text(
+              title,
+              style: TextStyle(color: AppColors.black),
+            ),
+          ],
+        ),
+        if (isCartItem)
+          BlocBuilder<EcommerceBloc, EcommerceState>(
+            builder: (context, state) {
+              if (state.cartProducts.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              final totalItems = state.cartProducts.fold<int>(
+                0,
+                (prev, item) => prev + item.quantity,
+              );
+              return Positioned(
+                right: -5,
+                top: -5,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.black,
+                    border: Border.all(color: AppColors.white, width: 2),
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  ),
+                  child: Center(
+                    child: Text(
+                      /* state.cartProducts.length.toString(), */
+                      totalItems.toString(),
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
+                  ),
+                ),
+              );
+            },
+          )
+      ],
     );
   }
 }

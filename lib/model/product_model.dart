@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class ProductModel extends Equatable {
   final String title;
-  final double price;
+  final int price;
   final String id;
   final String imageUrl;
   final String description;
@@ -16,12 +16,12 @@ class ProductModel extends Equatable {
     required this.imageUrl,
     required this.description,
     required this.type,
-    this.quantity = 0,
+    this.quantity = 1,
   });
 
   ProductModel copyWith({
     String? title,
-    double? price,
+    int? price,
     String? id,
     String? imageUrl,
     String? description,
