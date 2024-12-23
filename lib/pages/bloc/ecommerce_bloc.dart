@@ -12,6 +12,7 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
     on<AddToCartEvent>(_onAddtoCartEvent);
     on<UpdateCartItemEvent>(_onUpdateCartItemEvent);
     on<RemoveCartItemEvent>(_onRemoveCartItemEvent);
+    on<CheckoutCartEvent>(_onCheckoutCartEvent);
   }
 
   void _onFetchProductsEvent(
@@ -61,8 +62,41 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
 
   //de tarea hacer estas funcionalidades, y tambien que no permita menos de 1
 
+  //este lo estoy usando para actualizar el carrito pero restando
   void _onUpdateCartItemEvent(
-      UpdateCartItemEvent event, Emitter<EcommerceState> emit) {}
+      UpdateCartItemEvent event, Emitter<EcommerceState> emit) {
+    final quantityInitial = event.product.quantity;
+
+    //actualiza el carrito restando la cantidad de a 1
+    final updatedCart = state.cartProducts.map((item) {
+      if (item.id == event.product.id) {
+        return item.copyWith(quantity: item.quantity - 1);
+      }
+      return item;
+    }).toList();
+
+    //si la cantidad del producto inicial era 1, se elimina el producto del carrito
+    if (quantityInitial == 1) {
+      updatedCart.removeWhere((item) => item.id == event.product.id);
+    }
+
+    emit(state.copyWith(cartProducts: updatedCart));
+  }
+
   void _onRemoveCartItemEvent(
-      RemoveCartItemEvent event, Emitter<EcommerceState> emit) {}
+      RemoveCartItemEvent event, Emitter<EcommerceState> emit) {
+    final updatedCart = state.cartProducts
+        .where((item) => item.id != event.product.id)
+        .toList();
+
+    emit(state.copyWith(cartProducts: updatedCart));
+  }
+
+  void _onCheckoutCartEvent(
+      CheckoutCartEvent event, Emitter<EcommerceState> emit) {
+    if (state.cartProducts.isEmpty) {
+      return;
+    }
+    emit(state.copyWith(cartProducts: List<ProductModel>.empty()));
+  }
 }

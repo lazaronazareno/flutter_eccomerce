@@ -27,18 +27,33 @@ class ProductWidget extends StatelessWidget {
               color: AppColors.green,
             ));
           }
-          return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: .60,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Latest Products",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              itemCount: state.products.length,
-              itemBuilder: (context, index) {
-                final product = state.products[index];
-                return _buildCardProduct(context, size, product: product);
-              });
+              Expanded(
+                child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: .60,
+                    ),
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      final product = state.products[index];
+                      return _buildCardProduct(context, size, product: product);
+                    }),
+              ),
+            ],
+          );
         },
       ),
     );
@@ -49,48 +64,73 @@ class ProductWidget extends StatelessWidget {
     Size size, {
     required ProductModel product,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
       children: [
-        Container(
-          width: size.width,
-          height: 155,
-          decoration: BoxDecoration(
-            color: AppColors.greyBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Image.network(product.imageUrl),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: size.width,
+              height: 130,
+              decoration: BoxDecoration(
+                color: AppColors.greyBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Image.network(product.imageUrl),
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Text(
+              product.title,
+              maxLines: 2,
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                color: AppColors.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Text(
+              "\$${product.price}",
+              style: TextStyle(
+                  color: AppColors.black, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            AppPrimaryButton(
+              onTap: () {
+                context
+                    .read<EcommerceBloc>()
+                    .add(AddToCartEvent(product: product));
+              },
+              text: "Add to cart",
+              height: 30,
+            ),
+          ],
         ),
-        const SizedBox(
-          height: 4,
-        ),
-        Text(
-          product.title,
-          maxLines: 2,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            color: AppColors.black,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(
-          height: 8,
-        ),
-        Text(
-          "\$${product.price}",
-          style: TextStyle(color: AppColors.black, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(
-          height: 8,
-        ),
-        AppPrimaryButton(
-          onTap: () {
-            context.read<EcommerceBloc>().add(AddToCartEvent(product: product));
-          },
-          text: "Add to cart",
-          height: 30,
-        )
+        Positioned(
+            top: 10,
+            right: 10,
+            child: CircleAvatar(
+              backgroundColor: AppColors.white,
+              radius: 12,
+              child: IconButton(
+                padding: const EdgeInsets.all(4),
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.favorite_border_outlined,
+                  size: 14,
+                ),
+              ),
+            ))
       ],
     );
   }

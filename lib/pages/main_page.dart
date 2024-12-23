@@ -37,15 +37,16 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
         body: _pages[selectedIndex],
         bottomNavigationBar: Container(
-            width: double.infinity,
-            height: 70,
+            width: size.width,
+            height: size.height * 0.10,
             color: AppColors.white,
-            padding: const EdgeInsets.only(top: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 itemButtonMenu(
                   onTap: () => onItemTapped(0),
@@ -91,20 +92,21 @@ class _MainPageState extends State<MainPage> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Column(
-          children: [
-            IconButton(
-              icon: Icon(
+        GestureDetector(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
                 icon,
                 color: isactive ? AppColors.green : AppColors.black,
               ),
-              onPressed: onTap,
-            ),
-            Text(
-              title,
-              style: TextStyle(color: AppColors.black),
-            ),
-          ],
+              Text(
+                title,
+                style: TextStyle(color: AppColors.black, fontSize: 12),
+              ),
+            ],
+          ),
         ),
         if (isCartItem)
           BlocBuilder<EcommerceBloc, EcommerceState>(
@@ -118,7 +120,7 @@ class _MainPageState extends State<MainPage> {
                 (prev, item) => prev + item.quantity,
               );
               return Positioned(
-                right: -5,
+                right: -10,
                 top: -5,
                 child: Container(
                   width: 24,
@@ -143,3 +145,21 @@ class _MainPageState extends State<MainPage> {
     );
   }
 }
+
+
+/* otra forma de hacer que el iconButton no tenga espacio con un texto debajo
+ IconButton(
+              icon: Icon(
+                icon,
+                color: isactive ? AppColors.green : AppColors.black,
+              ),
+              onPressed: onTap,
+              style: const ButtonStyle(
+                tapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              ),
+            ),
+            Text(
+              title,
+              style: TextStyle(color: AppColors.black, fontSize: 12),
+            ), */
