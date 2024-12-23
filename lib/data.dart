@@ -34,7 +34,7 @@ List<Map<String, dynamic>> productsData = [
     "imageUrl":
         "https://acdn.mitiendanube.com/stores/001/897/262/products/smartwatch-xiaomi-redmi-watch-3_1-ebee86e4bffc76154317092351712614-1024-1024.webp",
     "description": "A smartwatch to keep you connected on the go.",
-    "type": "Smartwatches"
+    "type": "Watches"
   },
   {
     "id": 105,
@@ -44,6 +44,6 @@ List<Map<String, dynamic>> productsData = [
         "https://images.samsung.com/is/image/samsung/p6pim/cl/2407/gallery/cl-galaxy-buds3-pro-r630-sm-r630nzaalta-542134215?\$650_519_PNG\$",
     "description":
         "Noise-cancelling headphones for an immersive audio experience.",
-    "type": "Headphones"
+    "type": "Music"
   },
 ];

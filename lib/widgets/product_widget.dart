@@ -15,7 +15,7 @@ class ProductWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         16,
-        16,
+        4,
         16,
         0,
       ),
@@ -30,12 +30,45 @@ class ProductWidget extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Latest Products",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Latest Products",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Text(
+                        "See All",
+                        style: TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                      CircleAvatar(
+                        backgroundColor: AppColors.greyBackground,
+                        radius: 12,
+                        child: IconButton(
+                          onPressed: () {},
+                          padding: const EdgeInsets.all(4),
+                          icon: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 8,
               ),
               Expanded(
                 child: GridView.builder(
@@ -100,7 +133,7 @@ class ProductWidget extends StatelessWidget {
             Text(
               "\$${product.price}",
               style: TextStyle(
-                  color: AppColors.black, fontWeight: FontWeight.w600),
+                  color: AppColors.black, fontWeight: FontWeight.bold),
             ),
             const SizedBox(
               height: 8,

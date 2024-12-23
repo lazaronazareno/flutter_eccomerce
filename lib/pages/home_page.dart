@@ -28,6 +28,8 @@ class Body extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.greyBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.white,
+        scrolledUnderElevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: CircleAvatar(
@@ -49,7 +51,7 @@ class Body extends StatelessWidget {
               Text(
                 "92 High Street, London",
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.black),
               ),
@@ -67,20 +69,61 @@ class Body extends StatelessWidget {
           const SizedBox(width: 16),
         ],
       ),
-      body: Container(
-        margin: const EdgeInsets.only(top: 16),
-        width: size.width,
-        height: size.height,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(32),
-            topRight: Radius.circular(32),
+      body: Column(
+        children: [
+          Container(
+            width: size.width,
+            height: size.height * 0.1,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24)),
+            ),
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 16),
+            child: TextField(
+              textAlignVertical: TextAlignVertical.center,
+              maxLines: 1,
+              expands: false,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                  hintText: "Search the entire shop",
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    size: 24,
+                  ),
+                  fillColor: AppColors.greyBackground,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  constraints: null,
+                  contentPadding: EdgeInsets.zero),
+            ),
           ),
-        ),
-        child: const Column(
-          children: [CategoriesWidget(), Expanded(child: ProductWidget())],
-        ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 16),
+              width: size.width,
+              height: size.height,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+              ),
+              child: Column(
+                children: [
+                  CategoriesWidget(),
+                  const Expanded(child: ProductWidget())
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

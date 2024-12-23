@@ -63,6 +63,7 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
   //de tarea hacer estas funcionalidades, y tambien que no permita menos de 1
 
   //este lo estoy usando para actualizar el carrito pero restando
+  //cambiar nombre
   void _onUpdateCartItemEvent(
       UpdateCartItemEvent event, Emitter<EcommerceState> emit) {
     final quantityInitial = event.product.quantity;
