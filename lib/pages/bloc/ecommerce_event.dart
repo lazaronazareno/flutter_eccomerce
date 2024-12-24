@@ -28,3 +28,23 @@ class RemoveCartItemEvent extends EcommerceEvent {
 }
 
 class CheckoutCartEvent extends EcommerceEvent {}
+
+class ToggleFavoriteEvent extends EcommerceEvent {
+  final ProductModel productId;
+
+  const ToggleFavoriteEvent({required this.productId});
+}
+
+class ChangeFilterEvent extends EcommerceEvent {
+  final String filter;
+
+  const ChangeFilterEvent({required this.filter});
+}
+
+class LoadCartItemsEvent extends EcommerceEvent {}
+
+class PostItemToCartEvent extends EcommerceEvent {
+  final ProductModel product;
+
+  const PostItemToCartEvent({required this.product});
+}

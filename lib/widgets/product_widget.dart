@@ -1,4 +1,3 @@
-import 'package:e_commerce_app/data.dart';
 import 'package:e_commerce_app/model/product_model.dart';
 import 'package:e_commerce_app/pages/bloc/ecommerce_bloc.dart';
 import 'package:e_commerce_app/widgets/app_colors.dart';
@@ -79,9 +78,9 @@ class ProductWidget extends StatelessWidget {
                       mainAxisSpacing: 10,
                       childAspectRatio: .60,
                     ),
-                    itemCount: state.products.length,
+                    itemCount: state.filteredProducts.length,
                     itemBuilder: (context, index) {
-                      final product = state.products[index];
+                      final product = state.filteredProducts[index];
                       return _buildCardProduct(context, size, product: product);
                     }),
               ),
@@ -142,7 +141,7 @@ class ProductWidget extends StatelessWidget {
               onTap: () {
                 context
                     .read<EcommerceBloc>()
-                    .add(AddToCartEvent(product: product));
+                    .add(PostItemToCartEvent(product: product));
               },
               text: "Add to cart",
               height: 30,
