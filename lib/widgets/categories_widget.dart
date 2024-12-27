@@ -1,7 +1,9 @@
 import 'package:e_commerce_app/model/category_item_model.dart';
+import 'package:e_commerce_app/pages/bloc/ecommerce_bloc.dart';
 import 'package:e_commerce_app/widgets/app_colors.dart';
 import 'package:e_commerce_app/widgets/category_item_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoriesWidget extends StatelessWidget {
   CategoriesWidget({super.key});
@@ -97,12 +99,26 @@ class CategoriesWidget extends StatelessWidget {
                       left: index == 0 ? 0 : 8,
                       right: index == categories.length - 1 ? 0 : 8,
                     ),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: CategoryItemWidget(
-                        category: CategoryItem(
-                          title: categories[index].title,
-                          icon: categories[index].icon,
+                    child: BlocProvider.value(
+                      value: context.read<EcommerceBloc>(),
+                      child: GestureDetector(
+                        onTap: () {
+                          print(categories[index].title);
+                          print(context
+                              .read<EcommerceBloc>()
+                              .state
+                              .filteredProducts);
+                          context.read<EcommerceBloc>().add(
+                                ChangeFilterEvent(
+                                  filter: categories[index].title,
+                                ),
+                              );
+                        },
+                        child: CategoryItemWidget(
+                          category: CategoryItem(
+                            title: categories[index].title,
+                            icon: categories[index].icon,
+                          ),
                         ),
                       ),
                     ),

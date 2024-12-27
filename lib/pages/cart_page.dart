@@ -11,8 +11,8 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => EcommerceBloc()..add(LoadCartItemsEvent()),
+    return BlocProvider.value(
+      value: context.read<EcommerceBloc>()..add(LoadCartItemsEvent()),
       child: const Body(),
     );
   }
@@ -50,52 +50,52 @@ class Body extends StatelessWidget {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            width: size.width,
-            height: size.height * 0.1,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24)),
-            ),
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 16),
-            child: TextField(
-              maxLines: null,
-              expands: false,
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.black,
+      body: BlocBuilder<EcommerceBloc, EcommerceState>(
+        builder: (context, state) {
+          return Column(
+            children: [
+              Container(
+                width: size.width,
+                height: size.height * 0.1,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(24),
+                      bottomRight: Radius.circular(24)),
+                ),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, top: 4, bottom: 16),
+                child: TextField(
+                  maxLines: null,
+                  expands: false,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.all(0),
+                    hintText: "92 High Street, London",
+                    prefixIcon: const Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                    ),
+                    suffixIcon: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                    ),
+                    fillColor: AppColors.greyBackground,
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
               ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.all(0),
-                hintText: "92 High Street, London",
-                prefixIcon: const Icon(
-                  Icons.location_on_outlined,
-                  size: 16,
-                ),
-                suffixIcon: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                ),
-                fillColor: AppColors.greyBackground,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          BlocBuilder<EcommerceBloc, EcommerceState>(
-            builder: (context, state) {
-              return Expanded(
+              Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 8),
                   decoration: BoxDecoration(
@@ -109,7 +109,13 @@ class Body extends StatelessWidget {
                   //condicional
                   child: state.cartProducts.isEmpty
                       ? const Center(
-                          child: Text('No products in cart'),
+                          child: Text(
+                            'No products in cart',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         )
                       : ListView.builder(
                           itemCount: state.cartProducts.length,
@@ -119,25 +125,29 @@ class Body extends StatelessWidget {
                           },
                         ),
                 ),
-              );
-            },
-          ),
-          Container(
-            color: AppColors.white,
-            padding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 8,
-              bottom: 8,
-            ),
-            child: AppPrimaryButton(
-                onTap: () {
-                  context.read<EcommerceBloc>().add(CheckoutCartEvent());
-                },
-                text: "Checkout",
-                height: 40),
-          ),
-        ],
+              ),
+              Container(
+                color: AppColors.white,
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 8,
+                  bottom: 8,
+                ),
+                child: state.cartProducts.isNotEmpty
+                    ? AppPrimaryButton(
+                        onTap: () {
+                          context
+                              .read<EcommerceBloc>()
+                              .add(CheckoutCartEvent());
+                        },
+                        text: "Checkout",
+                        height: 40)
+                    : null,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -242,7 +252,7 @@ class Body extends StatelessWidget {
                         onPressed: () {
                           context
                               .read<EcommerceBloc>()
-                              .add(AddToCartEvent(product: product));
+                              .add(PostItemToCartEvent(product: product));
                         },
                         icon: Icon(Icons.add, color: AppColors.black),
                         iconSize: 12,

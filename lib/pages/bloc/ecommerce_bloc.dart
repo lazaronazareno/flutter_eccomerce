@@ -8,8 +8,10 @@ import 'package:uuid/uuid.dart';
 part 'ecommerce_event.dart';
 part 'ecommerce_state.dart';
 
-const baseUrl = "https://demoluisfelipe.firebaseio.com/adl_ecommerce.json";
-const cartUrl = "https://demoluisfelipe.firebaseio.com/adl_ecommerce_cart_lvs";
+const baseUrl =
+    "https://lazaro-portfolio-default-rtdb.firebaseio.com/ecommerce-flutter.json";
+const cartUrl =
+    "https://lazaro-portfolio-default-rtdb.firebaseio.com/ecommerce-flutter-cart";
 
 class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
   var uuid = const Uuid();
@@ -64,42 +66,49 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
     emit(state.copyWith(homeStatus: HomeScreenStatus.loading));
 
     final response = await dio.get(baseUrl);
+    final data = response.data as Map<String, dynamic>?;
 
-    final productsData =
-        (response.data as Map<String, dynamic>).entries.map((item) {
+    final responseCart = await dio.get('$cartUrl.json');
+    final dataCart = responseCart.data as Map<String, dynamic>?;
+
+    if (data == null) {
+      emit(state.copyWith(homeStatus: HomeScreenStatus.success, products: []));
+      return;
+    }
+
+    final productsData = data.entries.map((item) {
       final product = item.value;
       return ProductModel(
           title: product["description"],
           price: product["price"],
-          id: item.key,
+          id: product["id"],
           imageUrl: product["image_url"],
           description: product["description"] ?? "",
           type: product["product"] ?? "all");
     }).toList();
 
-    /* final products = productsData.map((product) {
-      return ProductModel(
-        id: product["id"].toString(),
-        description: product["description"],
-        title: product["title"],
-        price: (product["price"]),
-        imageUrl: product["imageUrl"],
-        type: product["type"],
-      );
-    }).toList(); */
+    List<ProductModel> cartListItems = [];
 
-    final filteredProducts = productsData.where((product) {
-      if (state.filter == 'all') {
-        return true;
-      }
-      return product.type == state.filter;
-    }).toList();
+    if (dataCart != null) {
+      cartListItems = dataCart.entries.map((item) {
+        final product = item.value;
+
+        return ProductModel(
+            title: product["description"],
+            price: product["price"],
+            id: product["id"],
+            imageUrl: product["image_url"],
+            description: product["description"] ?? "",
+            type: product["product"] ?? "all");
+      }).toList();
+    }
 
     emit(
       state.copyWith(
         products: productsData,
         homeStatus: HomeScreenStatus.success,
         filteredProducts: productsData,
+        cartProducts: cartListItems,
       ),
     );
   }
@@ -127,35 +136,42 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
     emit(state.copyWith(cartProducts: updatedCart));
   }
 
-  //de tarea hacer estas funcionalidades, y tambien que no permita menos de 1
-
   //este lo estoy usando para actualizar el carrito pero restando
-  //cambiar nombre
   void _onUpdateCartItemEvent(
-      UpdateCartItemEvent event, Emitter<EcommerceState> emit) {
-    final quantityInitial = event.product.quantity;
+      UpdateCartItemEvent event, Emitter<EcommerceState> emit) async {
+    final ProductModel product = event.product;
 
-    //actualiza el carrito restando la cantidad de a 1
-    final updatedCart = state.cartProducts.map((item) {
-      if (item.id == event.product.id) {
-        return item.copyWith(quantity: item.quantity - 1);
-      }
-      return item;
-    }).toList();
+    if (product.quantity == 1) {
+      await dio.delete("$cartUrl/${product.id}.json");
 
-    //si la cantidad del producto inicial era 1, se elimina el producto del carrito
-    if (quantityInitial == 1) {
-      updatedCart.removeWhere((item) => item.id == event.product.id);
+      final updatedCart =
+          state.cartProducts.where((item) => item.id != product.id).toList();
+
+      return emit(state.copyWith(cartProducts: updatedCart));
     }
+
+    final newProductQuantity = product.quantity - 1;
+
+    await dio.patch(
+      "$cartUrl/${product.id}.json",
+      data: {"quantity": newProductQuantity},
+    );
+
+    final updatedCart = [...state.cartProducts];
+    final index = updatedCart.indexWhere((item) => item.id == product.id);
+    updatedCart[index] = product.copyWith(quantity: newProductQuantity);
 
     emit(state.copyWith(cartProducts: updatedCart));
   }
 
   void _onRemoveCartItemEvent(
-      RemoveCartItemEvent event, Emitter<EcommerceState> emit) {
-    final updatedCart = state.cartProducts
-        .where((item) => item.id != event.product.id)
-        .toList();
+      RemoveCartItemEvent event, Emitter<EcommerceState> emit) async {
+    final ProductModel product = event.product;
+
+    await dio.delete("$cartUrl/${product.id}.json");
+
+    final updatedCart =
+        state.cartProducts.where((item) => item.id != product.id).toList();
 
     emit(state.copyWith(cartProducts: updatedCart));
   }
@@ -198,11 +214,13 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
   void _onChangeFilterEvent(
       ChangeFilterEvent event, Emitter<EcommerceState> emit) {
     final filteredProducts = state.products.where((product) {
-      if (event.filter == 'all') {
+      if (event.filter == 'All') {
         return true;
       }
       return product.type == event.filter;
     }).toList();
+
+    print(filteredProducts);
 
     emit(state.copyWith(
         filteredProducts: filteredProducts, filter: event.filter));
@@ -211,29 +229,27 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
   void _onLoadCartItemsEvent(
       LoadCartItemsEvent event, Emitter<EcommerceState> emit) async {
     emit(state.copyWith(homeStatus: HomeScreenStatus.loading));
-
-    List<ProductModel> cartItems = [];
-
     final response = await dio.get("$cartUrl.json");
-    print(response);
-    try {
-      cartItems = (response.data as Map<String, dynamic>).entries.map((item) {
-        final product1 = item.value;
-        final product2 = product1.entries.first.value;
-        print(product2);
-        return ProductModel(
-            title: product2["description"],
-            price: product2["price"],
-            id: product2["id"],
-            imageUrl: product2["image_url"],
-            description: product2["description"] ?? "",
-            type: product2["product"] ?? "all");
-      }).toList();
-    } catch (e) {
-      print(e);
+    final data = response.data as Map<String, dynamic>?;
+
+    if (data == null) {
+      emit(state.copyWith(cartProducts: []));
+      return;
     }
 
-    print(cartItems);
+    final cartItems = data.entries.map((item) {
+      final product1 = item.value;
+
+      return ProductModel(
+        title: product1["description"],
+        price: product1["price"],
+        id: product1["id"],
+        imageUrl: product1["image_url"],
+        description: product1["description"] ?? "",
+        type: product1["product"] ?? "all",
+        quantity: product1["quantity"] ?? 1,
+      );
+    }).toList();
 
     emit(state.copyWith(
         cartProducts: cartItems, homeStatus: HomeScreenStatus.success));
@@ -242,22 +258,45 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
   void _onPostItemToCartEvent(
       PostItemToCartEvent event, Emitter<EcommerceState> emit) async {
     //generar un uuid para el producto
-    final id = uuid.v1();
-    final url = "$cartUrl/$id.json";
-    print(url);
-    final response = await dio.post(
-      url,
-      data: {
-        "id": id,
-        "description": event.product.description,
-        "image_url": event.product.imageUrl,
-        "price": event.product.price,
-        "product": event.product.type
-      },
-    );
+    //String id = uuid.v1();
 
-    print(response.data);
+    final ProductModel product = event.product;
 
-    emit(state.copyWith(cartProducts: state.cartProducts));
+    //verificar si el producto ya existe en el carrito: -1 si no lo encontro, otro numero si está
+    final existItemIndex =
+        state.cartProducts.indexWhere((item) => item.id == product.id);
+
+    if (existItemIndex >= 0) {
+      final productItem = state.cartProducts[existItemIndex];
+      final newProductQuantity = productItem.quantity + 1;
+
+      await dio.patch(
+        "$cartUrl/${product.id}.json",
+        data: {"quantity": newProductQuantity},
+      );
+
+      final updatedCart = [...state.cartProducts];
+      updatedCart[existItemIndex] =
+          productItem.copyWith(quantity: newProductQuantity);
+
+      emit(state.copyWith(cartProducts: updatedCart));
+    } else {
+      final url = "$cartUrl/${product.id}.json";
+      await dio.put(
+        url,
+        data: {
+          "id": product.id,
+          "description": product.title,
+          "image_url": product.imageUrl,
+          "price": product.price,
+          "product": product.type,
+          "quantity": 1,
+        },
+      );
+
+      final updatedCart = [...state.cartProducts, product];
+
+      emit(state.copyWith(cartProducts: updatedCart));
+    }
   }
 }
