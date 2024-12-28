@@ -48,3 +48,24 @@ class PostItemToCartEvent extends EcommerceEvent {
 
   const PostItemToCartEvent({required this.product});
 }
+
+class FetchCatalogProductsEvent extends EcommerceEvent {}
+
+class CreateProductEvent extends EcommerceEvent {
+  final String title;
+  final String imageUrl;
+  final int price;
+  final String? id;
+
+  const CreateProductEvent(
+      {required this.title,
+      required this.imageUrl,
+      required this.price,
+      this.id});
+}
+
+class DeleteProductEvent extends EcommerceEvent {
+  final String productId;
+
+  const DeleteProductEvent({required this.productId});
+}

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:e_commerce_app/data.dart';
 import 'package:e_commerce_app/model/product_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +8,7 @@ part 'ecommerce_event.dart';
 part 'ecommerce_state.dart';
 
 const baseUrl =
-    "https://lazaro-portfolio-default-rtdb.firebaseio.com/ecommerce-flutter.json";
+    "https://lazaro-portfolio-default-rtdb.firebaseio.com/ecommerce-flutter";
 const cartUrl =
     "https://lazaro-portfolio-default-rtdb.firebaseio.com/ecommerce-flutter-cart";
 
@@ -27,6 +26,9 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
     on<ChangeFilterEvent>(_onChangeFilterEvent);
     on<LoadCartItemsEvent>(_onLoadCartItemsEvent);
     on<PostItemToCartEvent>(_onPostItemToCartEvent);
+    on<FetchCatalogProductsEvent>(_onFetchCatalogProductsEvent);
+    on<CreateProductEvent>(_onCreateProductEvent);
+    on<DeleteProductEvent>(_onDeleteProductEvent);
   }
 
 /*   void _onFetchProductsEvent(
@@ -65,7 +67,7 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
       FetchProductsEvent event, Emitter<EcommerceState> emit) async {
     emit(state.copyWith(homeStatus: HomeScreenStatus.loading));
 
-    final response = await dio.get(baseUrl);
+    final response = await dio.get("$baseUrl.json");
     final data = response.data as Map<String, dynamic>?;
 
     final responseCart = await dio.get('$cartUrl.json');
@@ -298,5 +300,91 @@ class EcommerceBloc extends Bloc<EcommerceEvent, EcommerceState> {
 
       emit(state.copyWith(cartProducts: updatedCart));
     }
+  }
+
+  void _onFetchCatalogProductsEvent(
+      FetchCatalogProductsEvent event, Emitter<EcommerceState> emit) async {
+    emit(state.copyWith(catalogStatus: CatalogScreenStatus.loading));
+
+    final response = await dio.get("$baseUrl.json");
+    final data = response.data as Map<String, dynamic>?;
+
+    if (data == null) {
+      emit(state.copyWith(
+          catalogStatus: CatalogScreenStatus.success, catalogProducts: []));
+      return;
+    }
+
+    final catalogProductsData = data.entries.map((item) {
+      final product = item.value;
+      return ProductModel(
+          title: product["description"],
+          price: product["price"],
+          id: product["id"],
+          imageUrl: product["image_url"],
+          description: product["description"] ?? "",
+          type: product["product"] ?? "all");
+    }).toList();
+
+    emit(
+      state.copyWith(
+        catalogStatus: CatalogScreenStatus.success,
+        catalogProducts: catalogProductsData,
+      ),
+    );
+  }
+
+  //deberia separarse la logica de crear y editar productos
+  void _onCreateProductEvent(
+      CreateProductEvent event, Emitter<EcommerceState> emit) async {
+    final String newProductId = uuid.v1();
+
+    final data = {
+      "id": event.id ?? newProductId,
+      "description": event.title,
+      "image_url": event.imageUrl,
+      "price": event.price,
+      "product": "all",
+    };
+
+    final newProduct = ProductModel(
+      id: newProductId,
+      title: event.title,
+      imageUrl: event.imageUrl,
+      price: event.price,
+      description: "",
+      type: "",
+    );
+
+    List<ProductModel> updatedProducts = [];
+
+    //te podes ahorrar la condicional por que el put sirve para ambas condiciones en este caso
+    if (event.id != null) {
+      await dio.patch("$baseUrl/${event.id}.json", data: data);
+      updatedProducts = state.catalogProducts.map((product) {
+        if (product.id == event.id) {
+          return newProduct;
+        }
+        return product;
+      }).toList();
+    } else {
+      await dio.put("$baseUrl/$newProductId.json", data: data);
+      updatedProducts = [...state.catalogProducts, newProduct];
+    }
+
+    emit(state.copyWith(
+        catalogProducts: updatedProducts,
+        catalogStatus: CatalogScreenStatus.productAdded));
+  }
+
+  void _onDeleteProductEvent(
+      DeleteProductEvent event, Emitter<EcommerceState> emit) async {
+    await dio.delete("$baseUrl/${event.productId}.json");
+
+    final updatedProducts = state.catalogProducts
+        .where((product) => product.id != event.productId)
+        .toList();
+
+    emit(state.copyWith(catalogProducts: updatedProducts));
   }
 }
